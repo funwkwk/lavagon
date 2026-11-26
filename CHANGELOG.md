@@ -9,6 +9,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 - Releases are published from a local machine with the new `release.ps1` (build, zip + SHA256, tag, push, GitHub release); GitHub Actions workflows only run when started manually.
 - README: release badge instead of the CI badge, release instructions.
+- Branches: `main` is the default, stable branch; development happens on `dev`, which is merged into `main` by hand. `release.ps1` only releases from `main`.
 
 ## [1.0.0] - 2026-11-26
 

@@ -20,6 +20,7 @@ You need Windows and the [.NET SDK](https://dotnet.microsoft.com/download) 6 or 
 ```powershell
 git clone https://github.com/funwkwk/lavagon.git
 cd lavagon
+git checkout dev
 dotnet build src\Lavagon -c Debug
 # run against a throw-away folder so you never touch a real setup
 src\Lavagon\bin\Debug\Lavagon.exe --root D:\lavagon-dev
@@ -28,6 +29,11 @@ src\Lavagon\bin\Debug\Lavagon.exe --root D:\lavagon-dev
 `build.ps1` produces the portable folder in `dist\Lavagon`. Maintainers publish releases with `release.ps1` (see the README).
 
 There is no automatic CI: please run `build.ps1` before opening a pull request and mention the result.
+
+## Branches
+
+- `main` — stable, default branch; only receives merges from `dev` (done by the maintainer) and release tags.
+- `dev` — development; all work and pull requests target `dev`.
 
 ## Pull requests
 

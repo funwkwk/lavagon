@@ -30,6 +30,7 @@ Apache / Nginx · PHP 5.6 – 8.6 · MySQL / MariaDB · PostgreSQL · Redis · M
 - [Configuration](#configuration)
 - [Building from source](#building-from-source)
 - [Project structure](#project-structure)
+- [Branches](#branches)
 - [Contributing](#contributing)
 - [License](#license)
 - [Bahasa Indonesia](#bahasa-indonesia)
@@ -150,10 +151,11 @@ The portable folder is written to `dist\Lavagon`. For development use `dotnet bu
 
 ### Publishing a release
 
-Releases are built and published from a local machine, no CI service required:
+Releases are built and published from a local machine on the `main` branch, no CI service required:
 
 ```powershell
 gh auth login                                              # once
+git checkout main; git merge --no-ff dev; git push         # bring dev into main
 powershell -ExecutionPolicy Bypass -File release.ps1 -Version 1.0.1 -DryRun   # build + zip only
 powershell -ExecutionPolicy Bypass -File release.ps1 -Version 1.0.1           # tag, push, publish
 ```
@@ -174,6 +176,24 @@ src/Lavagon/
 ├─ UI/                   WinForms: MainForm, AppMenu, PreferencesForm, controls, glyphs, logo
 └─ Resources/            lavagon.png (master logo), lavagon.ico
 ```
+
+## Branches
+
+| Branch | Purpose |
+| --- | --- |
+| `main` | Default, stable branch. Releases are tagged from here. Changes arrive only by merging `dev`. |
+| `dev` | Development branch. Every change and every pull request goes here first. |
+
+`dev` is merged into `main` by hand when it is ready for a release:
+
+```powershell
+git checkout main
+git merge --no-ff dev
+git push
+git checkout dev        # keep working on dev
+```
+
+After `release.ps1` (which commits the version bump on `main`), merge `main` back into `dev`.
 
 ## Contributing
 

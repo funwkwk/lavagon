@@ -3,6 +3,7 @@
 #   powershell -ExecutionPolicy Bypass -File release.ps1 -Version 1.0.1
 #
 # Requirements: .NET SDK, git, GitHub CLI logged in (gh auth login) with push rights.
+# Run it on the 'main' branch after merging 'dev' into it.
 # Steps: check a clean working tree in sync with origin, set the version in the project,
 # build, zip + SHA256, commit the version bump, tag vX.Y.Z, push, create (or update) the release.
 # -DryRun builds the zip in dist\ and changes nothing in git or on GitHub.
@@ -25,6 +26,7 @@ function Invoke-Checked([string]$what, [scriptblock]$cmd) {
 if (git status --porcelain) { throw 'Working tree is not clean. Commit or stash your changes first.' }
 Invoke-Checked 'git fetch' { git fetch --tags -q origin }
 $branch = git rev-parse --abbrev-ref HEAD
+if ($branch -ne 'main') { throw "Releases are made from 'main' (current branch: $branch). Merge dev into main first: git checkout main; git merge --no-ff dev" }
 if ((git rev-parse HEAD) -ne (git rev-parse "origin/$branch")) { throw "Branch $branch is not in sync with origin/$branch." }
 if (git tag --list $tag) { throw "Tag $tag already exists." }
 Invoke-Checked 'gh auth status' { gh auth status *> $null }
@@ -68,3 +70,4 @@ if ($LASTEXITCODE -eq 0) {
     Invoke-Checked 'gh release create' { gh release create $tag $zip "$zip.sha256" --title "Lavagon $tag" --latest @notes }
 }
 Write-Host "Published https://github.com/funwkwk/lavagon/releases/tag/$tag"
+Write-Host "Now bring the version bump back to dev: git checkout dev; git merge main; git push"
