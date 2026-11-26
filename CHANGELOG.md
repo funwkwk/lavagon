@@ -5,6 +5,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-11-26
+
 ### Added
 
 - Installer `Lavagon-Setup.exe` (per-user, no admin): install folder of your choice, Start menu / desktop shortcuts, *Settings > Apps* entry, silent mode (`--silent --dir`), upgrade that keeps user files and an uninstaller that keeps projects and databases. `build.ps1` and `release.ps1` build and publish it.
@@ -31,5 +33,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Preferences: run at startup, run minimized, start all automatically, document root, data directory, hostname format, ports.
 - GitHub Actions build and release workflows.
 
-[Unreleased]: https://github.com/funwkwk/lavagon/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/funwkwk/lavagon/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/funwkwk/lavagon/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/funwkwk/lavagon/releases/tag/v1.0.0
