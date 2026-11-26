@@ -39,7 +39,8 @@ namespace Lavagon.UI
         private readonly GlyphButton _hosts;
         private readonly TextLink _help;
         private readonly GlyphButton _gear;
-        private readonly Label _empty;
+        private readonly WelcomePanel _welcome;
+        private string _componentSignature;
         private readonly List<Row> _rows = new List<Row>();
         private readonly FlatButton _startAll, _web, _database, _terminal, _root;
         private readonly ToolTip _tips = new ToolTip();
@@ -94,14 +95,7 @@ namespace Lavagon.UI
             _gear.Click += (o, e) => ShowPreferences();
             _tips.SetToolTip(_gear, "Preferences");
 
-            _empty = new Label
-            {
-                AutoSize = false, ForeColor = Theme.MutedText, Visible = false, TextAlign = ContentAlignment.TopLeft, UseMnemonic = false,
-                Text = "No services found.\n\nPut the binaries into " + AppPaths.Bin + "\\<tool>\\<version>, for example:\n" +
-                       "   bin\\apache\\httpd-2.4.x\n   bin\\php\\php-8.3.x-Win32-vs16-x64\n   bin\\mysql\\mysql-8.4.x-winx64\n\n" +
-                       "Apache, MySQL and Mailpit show up automatically; other services can be\n" +
-                       "enabled in Menu > Preferences > Services & Ports.",
-            };
+            _welcome = new WelcomePanel(s) { Visible = false };
 
             _startAll = Button("Start All", Glyph.Start, (o, e) => ToggleAll());
             _web = Button("Web", Glyph.Globe, (o, e) => Safe(OpenWeb));
@@ -113,7 +107,7 @@ namespace Lavagon.UI
             _tips.SetToolTip(_terminal, "Open Terminal");
             _tips.SetToolTip(_root, "Document Root");
 
-            Controls.AddRange(new Control[] { _logo, _menuLink, _profile, _hosts, _help, _gear, _empty, _startAll, _web, _database, _terminal, _root });
+            Controls.AddRange(new Control[] { _logo, _menuLink, _profile, _hosts, _help, _gear, _welcome, _startAll, _web, _database, _terminal, _root });
 
             _menu = new ContextMenu();
             _menu.Popup += (o, e) => AppMenu.Build(_menu.MenuItems, this);
@@ -130,7 +124,7 @@ namespace Lavagon.UI
             _tray.MouseClick += (o, e) => { if (e.Button == MouseButtons.Left) ShowMain(); };
 
             _timer = new System.Windows.Forms.Timer { Interval = 2000 };
-            _timer.Tick += (o, e) => RefreshState();
+            _timer.Tick += (o, e) => { DetectComponentChanges(); RefreshState(); };
             _timer.Start();
 
             ThreadPool.RegisterWaitForSingleObject(_showSignal, (st, to) =>
@@ -261,7 +255,9 @@ namespace Lavagon.UI
                 Controls.Add(row.Action);
                 _rows.Add(row);
             }
-            _empty.Visible = _rows.Count == 0;
+            _welcome.Visible = _rows.Count == 0;
+            if (_welcome.Visible) _welcome.UpdateStatus();
+            _componentSignature = ComponentSignature();
             ResumeLayout();
             RefreshState();
             PerformLayout();
@@ -298,7 +294,7 @@ namespace Lavagon.UI
                 r.Port.Location = new Point(portX, y);
                 r.Action.Location = new Point(actionX, y);
             }
-            _empty.Bounds = new Rectangle(S(116), top, Math.Max(10, W - S(140)), Math.Max(10, H - top - S(80)));
+            _welcome.Bounds = new Rectangle(S(84), S(64), Math.Max(10, W - S(100)), Math.Max(10, H - S(64) - S(64)));
 
             int margin = S(56), gap = S(8), bh = S(24);
             var buttons = new[] { _startAll, _web, _database, _terminal, _root };
@@ -309,6 +305,23 @@ namespace Lavagon.UI
         }
 
         // ---- State ---------------------------------------------------------------------
+
+        /// <summary>What is installed and enabled; changes when folders are added to / removed from bin\.</summary>
+        private static string ComponentSignature() =>
+            string.Join("|", App.Services.Select(x => x.Key + "=" + (x.Installed && x.Enabled ? x.Folder : "-"))) +
+            "|php=" + (Php.Folder ?? "-") + "|mailpit=" + string.Join(",", Versions.List("mailpit"));
+
+        /// <summary>New component extracted into bin\ (or removed)? Update the window without a restart.</summary>
+        private void DetectComponentChanges()
+        {
+            if (_busy > 0) return;
+            var sig = ComponentSignature();
+            if (sig == _componentSignature) return;
+            _componentSignature = sig;
+            RebuildRows();
+            if (_rows.Count > 0 && !_welcome.Visible)
+                Notify("New components detected: " + string.Join(", ", _rows.Select(r => r.Service.Title + " " + r.Service.Version)));
+        }
 
         public void RefreshState()
         {
