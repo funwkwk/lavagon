@@ -5,8 +5,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-11-26
+
+### Added
+
+- Installer `Lavagon-Setup.exe` (per-user, no admin): install folder of your choice, Start menu / desktop shortcuts, *Settings > Apps* entry, silent mode (`--silent --dir`), upgrade that keeps user files and an uninstaller that keeps projects and databases. `build.ps1` and `release.ps1` build and publish it.
+
 ### Changed
 
+- First start: instead of "No services found", a welcome panel lists Apache, PHP, MySQL and Mailpit with their status, official download links, the target folder in `bin\` and links to open the bin folder and the guide.
+- Components extracted into `bin\` are detected while Lavagon runs (no restart needed).
 - Releases are published from a local machine with the new `release.ps1` (build, zip + SHA256, tag, push, GitHub release); GitHub Actions workflows only run when started manually.
 - README: release badge instead of the CI badge, release instructions.
 - Branches: `main` is the default, stable branch; development happens on `dev`, which is merged into `main` by hand. `release.ps1` only releases from `main`.
@@ -25,5 +33,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Preferences: run at startup, run minimized, start all automatically, document root, data directory, hostname format, ports.
 - GitHub Actions build and release workflows.
 
-[Unreleased]: https://github.com/funwkwk/lavagon/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/funwkwk/lavagon/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/funwkwk/lavagon/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/funwkwk/lavagon/releases/tag/v1.0.0

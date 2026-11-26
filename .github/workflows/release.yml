@@ -29,13 +29,16 @@ jobs:
         shell: pwsh
         run: ./build.ps1
 
-      - name: Zip and checksum
+      - name: Zip, installer and checksums
         shell: pwsh
         run: |
-          $zip = "Lavagon-${{ inputs.tag }}-portable.zip"
-          Compress-Archive -Path dist/Lavagon -DestinationPath $zip
-          $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
-          Set-Content "$zip.sha256" "$hash  $zip" -NoNewline
+          $tag = "${{ inputs.tag }}"
+          Compress-Archive -Path dist/Lavagon -DestinationPath "Lavagon-$tag-portable.zip"
+          Copy-Item dist/Lavagon-Setup.exe "Lavagon-Setup-$tag.exe"
+          foreach ($f in "Lavagon-Setup-$tag.exe", "Lavagon-$tag-portable.zip") {
+            $hash = (Get-FileHash $f -Algorithm SHA256).Hash.ToLower()
+            Set-Content "$f.sha256" "$hash  $f" -NoNewline
+          }
 
       - name: Publish release
         shell: pwsh
@@ -43,7 +46,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $tag = "${{ inputs.tag }}"
-          $files = @("Lavagon-$tag-portable.zip", "Lavagon-$tag-portable.zip.sha256")
+          $files = @("Lavagon-Setup-$tag.exe", "Lavagon-Setup-$tag.exe.sha256", "Lavagon-$tag-portable.zip", "Lavagon-$tag-portable.zip.sha256")
           gh release view $tag *> $null
           if ($LASTEXITCODE -eq 0) {
             # Release already exists (e.g. published by hand): refresh its assets.

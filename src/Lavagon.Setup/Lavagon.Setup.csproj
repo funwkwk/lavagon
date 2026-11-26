@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Lavagon installer. The payload is the portable zip produced by build.ps1:
+      dotnet build src\Lavagon.Setup -c Release -p:PayloadZip=<path to Lavagon-vX.Y.Z-portable.zip> -p:Version=X.Y.Z
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <RootNamespace>Lavagon.Setup</RootNamespace>
+    <AssemblyName>Lavagon-Setup</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>..\Lavagon\Resources\lavagon.ico</ApplicationIcon>
+    <Version>1.0.0</Version>
+    <Product>Lavagon Setup</Product>
+    <Company>Lavagon contributors</Company>
+    <Description>Lavagon Setup</Description>
+    <Copyright>Copyright (c) 2026 Lavagon contributors. MIT License.</Copyright>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <DebugType>embedded</DebugType>
+    <PayloadZip Condition="'$(PayloadZip)' == ''">$(MSBuildThisFileDirectory)..\..\dist\payload.zip</PayloadZip>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\Lavagon\Resources\lavagon.png" LogicalName="Lavagon.Setup.logo.png" />
+    <EmbeddedResource Include="$(PayloadZip)" LogicalName="Lavagon.Setup.payload.zip" Condition="Exists('$(PayloadZip)')" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <Target Name="WarnMissingPayload" BeforeTargets="Build" Condition="!Exists('$(PayloadZip)')">
+    <Warning Text="No payload zip at $(PayloadZip): the installer will not contain Lavagon. Run build.ps1." />
+  </Target>
+
+</Project>

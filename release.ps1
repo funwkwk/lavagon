@@ -5,7 +5,7 @@
 # Requirements: .NET SDK, git, GitHub CLI logged in (gh auth login) with push rights.
 # Run it on the 'main' branch after merging 'dev' into it.
 # Steps: check a clean working tree in sync with origin, set the version in the project,
-# build, zip + SHA256, commit the version bump, tag vX.Y.Z, push, create (or update) the release.
+# build, installer + zip + SHA256, commit the version bump, tag vX.Y.Z, push, create (or update) the release.
 # -DryRun builds the zip in dist\ and changes nothing in git or on GitHub.
 param(
     [Parameter(Mandatory = $true)][ValidatePattern('^\d+\.\d+\.\d+$')][string]$Version,
@@ -44,9 +44,15 @@ $out = Join-Path $root 'dist'
 $zip = Join-Path $out "Lavagon-$tag-portable.zip"
 if (Test-Path $zip) { Remove-Item $zip }
 Compress-Archive -Path (Join-Path $out 'Lavagon') -DestinationPath $zip
-$hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
-Set-Content "$zip.sha256" "$hash  $(Split-Path $zip -Leaf)" -NoNewline -Encoding ASCII
-Write-Host "Built $zip ($hash)"
+$setup = Join-Path $out "Lavagon-Setup-$tag.exe"
+Copy-Item (Join-Path $out 'Lavagon-Setup.exe') $setup -Force
+$assets = @($setup, $zip)
+foreach ($f in $assets) {
+    $hash = (Get-FileHash $f -Algorithm SHA256).Hash.ToLower()
+    Set-Content "$f.sha256" "$hash  $(Split-Path $f -Leaf)" -NoNewline -Encoding ASCII
+    Write-Host "Built $f ($hash)"
+}
+$assets += $assets | ForEach-Object { "$_.sha256" }
 
 if ($DryRun) {
     git checkout -q -- $csproj $program
@@ -65,9 +71,9 @@ Invoke-Checked 'git push' { git -c credential.helper= -c 'credential.helper=!gh 
 $notes = if ($NotesFile) { @('--notes-file', $NotesFile) } else { @('--generate-notes') }
 gh release view $tag *> $null
 if ($LASTEXITCODE -eq 0) {
-    Invoke-Checked 'gh release upload' { gh release upload $tag $zip "$zip.sha256" --clobber }
+    Invoke-Checked 'gh release upload' { gh release upload $tag @assets --clobber }
 } else {
-    Invoke-Checked 'gh release create' { gh release create $tag $zip "$zip.sha256" --title "Lavagon $tag" --latest @notes }
+    Invoke-Checked 'gh release create' { gh release create $tag @assets --title "Lavagon $tag" --latest @notes }
 }
 Write-Host "Published https://github.com/funwkwk/lavagon/releases/tag/$tag"
 Write-Host "Now bring the version bump back to dev: git checkout dev; git merge main; git push"
