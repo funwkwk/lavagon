@@ -1,9 +1,14 @@
 name: Release
 
-# Push a tag like v1.0.0 to build Lavagon and publish a GitHub release with a portable zip.
+# Manual only. The normal way to publish a release is the local script:
+#   powershell -ExecutionPolicy Bypass -File release.ps1 -Version 1.0.1
+# This workflow does the same on GitHub's runners for an existing tag (Actions tab > Run workflow).
 on:
-  push:
-    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to build and publish, e.g. v1.0.1
+        required: true
 
 permissions:
   contents: write
@@ -13,6 +18,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
 
       - uses: actions/setup-dotnet@v4
         with:
@@ -25,7 +32,7 @@ jobs:
       - name: Zip and checksum
         shell: pwsh
         run: |
-          $zip = "Lavagon-${{ github.ref_name }}-portable.zip"
+          $zip = "Lavagon-${{ inputs.tag }}-portable.zip"
           Compress-Archive -Path dist/Lavagon -DestinationPath $zip
           $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
           Set-Content "$zip.sha256" "$hash  $zip" -NoNewline
@@ -35,7 +42,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $tag = "${{ github.ref_name }}"
+          $tag = "${{ inputs.tag }}"
           $files = @("Lavagon-$tag-portable.zip", "Lavagon-$tag-portable.zip.sha256")
           gh release view $tag *> $null
           if ($LASTEXITCODE -eq 0) {

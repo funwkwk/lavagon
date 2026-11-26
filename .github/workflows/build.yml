@@ -1,9 +1,8 @@
 name: Build
 
+# Manual only: builds and releases are made locally with build.ps1 / release.ps1.
+# Run this from the Actions tab if GitHub Actions is available for the account.
 on:
-  push:
-    branches: [dev, main]
-  pull_request:
   workflow_dispatch:
 
 permissions:

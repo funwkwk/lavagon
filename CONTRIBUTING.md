@@ -25,7 +25,9 @@ dotnet build src\Lavagon -c Debug
 src\Lavagon\bin\Debug\Lavagon.exe --root D:\lavagon-dev
 ```
 
-`build.ps1` produces the portable folder in `dist\Lavagon`.
+`build.ps1` produces the portable folder in `dist\Lavagon`. Maintainers publish releases with `release.ps1` (see the README).
+
+There is no automatic CI: please run `build.ps1` before opening a pull request and mention the result.
 
 ## Pull requests
 

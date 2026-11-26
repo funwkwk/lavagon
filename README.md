@@ -7,7 +7,7 @@
 **A portable, open source local development environment for Windows.**
 Apache / Nginx · PHP 5.6 – 8.6 · MySQL / MariaDB · PostgreSQL · Redis · Mailpit — in one tiny window.
 
-[![Build](https://github.com/funwkwk/lavagon/actions/workflows/build.yml/badge.svg?branch=dev)](https://github.com/funwkwk/lavagon/actions/workflows/build.yml)
+[![Release](https://img.shields.io/github/v/release/funwkwk/lavagon?color=1E88FF)](https://github.com/funwkwk/lavagon/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-1E88FF.svg)](LICENSE)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-1E88FF.svg)
 ![PHP](https://img.shields.io/badge/PHP-5.6%20%E2%80%93%208.6-1E88FF.svg)
@@ -64,7 +64,7 @@ Apache / Nginx · PHP 5.6 – 8.6 · MySQL / MariaDB · PostgreSQL · Redis · M
 
 ## Quick start
 
-1. Get `Lavagon.exe`: download the portable zip from [Releases](https://github.com/funwkwk/lavagon/releases), take the latest [CI build](https://github.com/funwkwk/lavagon/actions/workflows/build.yml), or [build it yourself](#building-from-source). Put it into an empty folder, e.g. `C:\lavagon`.
+1. Get `Lavagon.exe`: download the portable zip from [Releases](https://github.com/funwkwk/lavagon/releases/latest) or [build it yourself](#building-from-source). Put it into an empty folder, e.g. `C:\lavagon`.
 2. Extract at least **Apache**, **PHP (Thread Safe x64)** and **MySQL** into `bin\` — see [Getting the components](#getting-the-components).
 3. Run `Lavagon.exe` and click **Start All**.
 4. Create `C:\lavagon\www\myapp\index.php` and open **http://myapp.test** (Lavagon asks once for admin rights to update the hosts file).
@@ -148,7 +148,17 @@ powershell -ExecutionPolicy Bypass -File build.ps1
 
 The portable folder is written to `dist\Lavagon`. For development use `dotnet build src\Lavagon -c Debug` and run it with `--root <some test folder>`.
 
-Releases are built by GitHub Actions: pushing a tag such as `v1.0.0` publishes a portable zip on the [Releases](https://github.com/funwkwk/lavagon/releases) page.
+### Publishing a release
+
+Releases are built and published from a local machine, no CI service required:
+
+```powershell
+gh auth login                                              # once
+powershell -ExecutionPolicy Bypass -File release.ps1 -Version 1.0.1 -DryRun   # build + zip only
+powershell -ExecutionPolicy Bypass -File release.ps1 -Version 1.0.1           # tag, push, publish
+```
+
+`release.ps1` bumps the version, builds `dist\Lavagon`, creates `Lavagon-v1.0.1-portable.zip` with a SHA256 file, tags `v1.0.1`, pushes and creates the GitHub release. The workflows in `.github/workflows` do the same on GitHub's runners but only when started manually.
 
 ## Project structure
 
@@ -183,7 +193,7 @@ Lavagon is an independent project inspired by the workflow of tools like Laragon
 
 **Lavagon** adalah lingkungan pengembangan lokal untuk Windows yang portabel dan open source — mirip Laragon, tanpa installer.
 
-1. Unduh zip portabel dari [Releases](https://github.com/funwkwk/lavagon/releases) dan ekstrak ke folder kosong, misalnya `C:\lavagon`.
+1. Unduh zip portabel dari [Releases](https://github.com/funwkwk/lavagon/releases/latest) dan ekstrak ke folder kosong, misalnya `C:\lavagon`.
 2. Ekstrak Apache, PHP (Thread Safe x64) dan MySQL ke `bin\<tool>\<versi>` (link download ada di tabel [Getting the components](#getting-the-components)).
 3. Jalankan `Lavagon.exe`, klik **Start All**.
 4. Setiap folder di `www` otomatis menjadi `http://namafolder.test`.

@@ -9,6 +9,6 @@
 ## Checklist
 
 - [ ] Targets the `dev` branch
-- [ ] `dotnet build src\Lavagon -c Release` succeeds without warnings
+- [ ] `build.ps1` succeeds without warnings (there is no automatic CI)
 - [ ] Nothing in `bin\` is modified at runtime; generated files go to `etc\`
 - [ ] README / CHANGELOG updated if the behavior changes
