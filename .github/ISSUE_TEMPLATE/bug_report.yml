@@ -1,0 +1,41 @@
+name: Bug report
+description: Something does not work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for reporting! Please remove passwords and private paths from logs.
+  - type: input
+    id: version
+    attributes:
+      label: Lavagon version
+      description: Shown in the window title, e.g. v1.0.0
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      placeholder: Windows 11 24H2
+  - type: textarea
+    id: components
+    attributes:
+      label: Components
+      description: Folder names in bin\ that are involved
+      placeholder: |
+        bin\apache\httpd-2.4.x-Win64-VS17
+        bin\php\php-8.4.x-Win32-vs17-x64
+        bin\mysql\mysql-8.4.x-winx64
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: Steps to reproduce, what you expected and what happened instead
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Relevant lines of logs\lavagon.log and the service log (apache_error.log, mysqld.log...)
+      render: text

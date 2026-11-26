@@ -1,0 +1,20 @@
+# Build output
+src/**/bin/
+src/**/obj/
+dist/
+*.user
+.vs/
+
+# Never commit third-party installers or binaries
+*.exe
+!src/**/Resources/*.exe
+
+# Runtime folders of a local Lavagon install
+/bin/
+/etc/
+/data/
+/tmp/
+/logs/
+/usr/
+/www/
+/backup/

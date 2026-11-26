@@ -1,0 +1,18 @@
+# Changelog
+
+All notable changes to this project are documented here.
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
+
+## [Unreleased]
+
+### Added
+
+- First public version of Lavagon.
+- Main window with per-service switches, *Start All / Stop*, Web, Database, Terminal and Root buttons; tray icon; native menu.
+- Services: Apache 2.4 (mod_php), Nginx (php-cgi), MySQL / MariaDB, PostgreSQL, MongoDB, Redis, Memcached, Mailpit.
+- PHP 5.6 – 8.6 side by side: per-version `php.ini`, extension toggles, quick settings, DLL preloading, Visual C++ runtime / architecture / NTS checks, Windows time zone.
+- Auto virtual hosts (`{name}.test`), hosts file sync through a one-off UAC prompt, local CA with per-site HTTPS.
+- MySQL: automatic data directory initialization, graceful shutdown limited to the server Lavagon started, create database, change / copy root password, backup, legacy authentication for PHP < 7.4.
+- Quick app recipes (Blank, WordPress, Laravel, Symfony, CodeIgniter, Slim, CakePHP).
+- Preferences: run at startup, run minimized, start all automatically, document root, data directory, hostname format, ports.
+- GitHub Actions build and release workflows.

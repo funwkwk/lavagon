@@ -1,0 +1,35 @@
+name: Release
+
+# Push a tag like v1.0.0 to build Lavagon and publish a GitHub release with a portable zip.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build portable folder
+        shell: pwsh
+        run: ./build.ps1
+
+      - name: Zip
+        shell: pwsh
+        run: Compress-Archive -Path dist/Lavagon -DestinationPath "Lavagon-${{ github.ref_name }}-portable.zip"
+
+      - name: Publish release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          gh release create "${{ github.ref_name }}" "Lavagon-${{ github.ref_name }}-portable.zip"
+          --title "Lavagon ${{ github.ref_name }}" --generate-notes

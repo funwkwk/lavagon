@@ -1,0 +1,30 @@
+name: Build
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build portable folder
+        shell: pwsh
+        run: ./build.ps1
+
+      - name: Upload Lavagon
+        uses: actions/upload-artifact@v4
+        with:
+          name: Lavagon-${{ github.sha }}
+          path: dist/Lavagon
