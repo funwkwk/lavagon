@@ -5,6 +5,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-26
+
 ### Added
 
 - First public version of Lavagon.
@@ -16,3 +18,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Quick app recipes (Blank, WordPress, Laravel, Symfony, CodeIgniter, Slim, CakePHP).
 - Preferences: run at startup, run minimized, start all automatically, document root, data directory, hostname format, ports.
 - GitHub Actions build and release workflows.
+
+[Unreleased]: https://github.com/funwkwk/lavagon/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/funwkwk/lavagon/releases/tag/v1.0.0

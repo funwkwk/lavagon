@@ -22,14 +22,25 @@ jobs:
         shell: pwsh
         run: ./build.ps1
 
-      - name: Zip
+      - name: Zip and checksum
         shell: pwsh
-        run: Compress-Archive -Path dist/Lavagon -DestinationPath "Lavagon-${{ github.ref_name }}-portable.zip"
+        run: |
+          $zip = "Lavagon-${{ github.ref_name }}-portable.zip"
+          Compress-Archive -Path dist/Lavagon -DestinationPath $zip
+          $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
+          Set-Content "$zip.sha256" "$hash  $zip" -NoNewline
 
       - name: Publish release
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-        run: >
-          gh release create "${{ github.ref_name }}" "Lavagon-${{ github.ref_name }}-portable.zip"
-          --title "Lavagon ${{ github.ref_name }}" --generate-notes
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $files = @("Lavagon-$tag-portable.zip", "Lavagon-$tag-portable.zip.sha256")
+          gh release view $tag *> $null
+          if ($LASTEXITCODE -eq 0) {
+            # Release already exists (e.g. published by hand): refresh its assets.
+            gh release upload $tag @files --clobber
+          } else {
+            gh release create $tag @files --title "Lavagon $tag" --generate-notes
+          }
