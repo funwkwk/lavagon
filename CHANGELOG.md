@@ -5,6 +5,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+
+- Installer `Lavagon-Setup.exe` (per-user, no admin): install folder of your choice, Start menu / desktop shortcuts, *Settings > Apps* entry, silent mode (`--silent --dir`), upgrade that keeps user files and an uninstaller that keeps projects and databases. `build.ps1` and `release.ps1` build and publish it.
+
 ### Changed
 
 - Releases are published from a local machine with the new `release.ps1` (build, zip + SHA256, tag, push, GitHub release); GitHub Actions workflows only run when started manually.
