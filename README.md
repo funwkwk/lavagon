@@ -54,6 +54,7 @@ Apache / Nginx · PHP 5.6 – 8.6 · MySQL / MariaDB · PostgreSQL · Redis · M
 | **PHP** | Per-version `php.ini`, extension toggles, quick settings (memory_limit, upload size…), `mail()` goes to Mailpit, `date.timezone` from your Windows location. |
 | **Quick app** | Create Blank, WordPress, Laravel, Symfony, CodeIgniter, Slim, CakePHP projects. Recipes are plain text in `usr\sites.conf`. |
 | **Tools** | Terminal with every tool on `PATH` (Cmder if present), HeidiSQL/Adminer button, Redis, Memcached, Mailpit web UI, Node.js and Python version switching, *Add Lavagon to Path*. |
+| **Updates** | Lavagon checks GitHub for new versions and updates itself in a few seconds (*Menu > Check for updates*); services keep running. Optional fully automatic updates in *Preferences > Updates*. |
 | **Comfort** | Tray icon, run at Windows startup, run minimized, start all automatically, clear error messages (port in use, missing VC++ runtime, wrong architecture…). |
 
 <details>

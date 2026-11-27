@@ -36,6 +36,10 @@ namespace Lavagon.UI
         private readonly PictureBox _logo;
         private readonly TextLink _menuLink;
         private readonly Label _profile;
+        private readonly TextLink _updateLink;
+        private readonly System.Windows.Forms.Timer _updateTimer;
+        private Updater.Release _update;
+        private bool _updating;
         private readonly GlyphButton _hosts;
         private readonly TextLink _help;
         private readonly GlyphButton _gear;
@@ -83,6 +87,9 @@ namespace Lavagon.UI
             _profile = new Label { AutoSize = true, Font = Theme.UiFont(8.25f), Text = "[" + App.Settings.Profile + "]" };
             _tips.SetToolTip(_profile, "Current profile");
 
+            _updateLink = new TextLink { Font = Theme.UiFont(8.25f, FontStyle.Bold), ForeColor = Theme.Accent, Visible = false };
+            _updateLink.Click += (o, e) => OfferUpdate(_update);
+
             _hosts = new GlyphButton { Glyph = Glyph.Hosts, GlyphColor = Color.FromArgb(232, 86, 86) };
             _hosts.Click += (o, e) => Safe(HostsFile.EditAsAdmin);
             _tips.SetToolTip(_hosts, "Click to edit hosts file as Administrator manually.");
@@ -108,7 +115,7 @@ namespace Lavagon.UI
             _tips.SetToolTip(_terminal, "Open Terminal");
             _tips.SetToolTip(_root, "Document Root");
 
-            Controls.AddRange(new Control[] { _logo, _menuLink, _profile, _hosts, _help, _gear, _setup, _startAll, _web, _database, _terminal, _root });
+            Controls.AddRange(new Control[] { _logo, _menuLink, _updateLink, _profile, _hosts, _help, _gear, _setup, _startAll, _web, _database, _terminal, _root });
 
             _menu = new ContextMenu();
             _menu.Popup += (o, e) => AppMenu.Build(_menu.MenuItems, this);
@@ -123,6 +130,16 @@ namespace Lavagon.UI
                 Visible = true,
             };
             _tray.MouseClick += (o, e) => { if (e.Button == MouseButtons.Left) ShowMain(); };
+            _tray.BalloonTipClicked += (o, e) => { if (_update != null && !_updating) { ShowMain(); OfferUpdate(_update); } };
+
+            // First check shortly after start, then whenever the last check is older than 12 hours.
+            _updateTimer = new System.Windows.Forms.Timer { Interval = 15000 };
+            _updateTimer.Tick += (o, e) =>
+            {
+                _updateTimer.Interval = 3600000;
+                if (Updater.CheckAutomatically && (DateTime.UtcNow - Updater.LastCheck).TotalHours >= 12) CheckForUpdates(false);
+            };
+            _updateTimer.Start();
 
             _timer = new System.Windows.Forms.Timer { Interval = 2000 };
             _timer.Tick += (o, e) => { DetectComponentChanges(); RefreshState(); };
@@ -190,6 +207,7 @@ namespace Lavagon.UI
                 return;
             }
             _timer.Stop();
+            _updateTimer.Stop();
             _tray.Visible = false;
             _tray.Dispose();
             base.OnFormClosing(e);
@@ -283,6 +301,7 @@ namespace Lavagon.UI
             _help.Location = new Point(_gear.Left - S(14) - _help.Width, S(4));
             _hosts.Bounds = new Rectangle(_help.Left - S(10) - S(16), S(7), S(16), S(18));
             _profile.Location = new Point(_hosts.Left - S(14) - _profile.Width, S(11));
+            _updateLink.Location = new Point(_profile.Left - S(16) - _updateLink.Width, S(10));
 
             int top = S(72), rowH = S(40);
             int portX = (int)(W * 0.5), actionX = (int)(W * 0.65);
@@ -325,6 +344,83 @@ namespace Lavagon.UI
             RebuildRows();
             if (_rows.Count > 0 && !_setup.Visible)
                 Notify("New components detected: " + string.Join(", ", _rows.Select(r => r.Service.Title + " " + r.Service.Version)));
+        }
+
+        // ---- Self update ---------------------------------------------------------------------
+
+        public Updater.Release AvailableUpdate => _update;
+
+        /// <summary>Asks GitHub for a newer release. Manual checks always report back; automatic ones stay quiet.</summary>
+        public void CheckForUpdates(bool manual)
+        {
+            if (_updating) return;
+            Task.Run(() => Updater.CheckAsync()).ContinueWith(t => BeginInvoke((Action)(() =>
+            {
+                if (t.Exception != null)
+                {
+                    if (manual) Ui.ShowError(new LavagonException("Could not check for updates:\n\n" + t.Exception.GetBaseException().Message));
+                    else Log.Error("Update check failed: " + t.Exception.GetBaseException().Message);
+                    return;
+                }
+                var release = t.Result;
+                _update = release;
+                _updateLink.Visible = release != null;
+                if (release != null) SetText(_updateLink, "Update to " + release.Version.ToString(3));
+                PerformLayout();
+
+                if (release == null)
+                {
+                    if (manual) Ui.Info($"You have the latest version of Lavagon ({Program.Version}).");
+                    return;
+                }
+                if (manual) { OfferUpdate(release); return; }
+                if (release.Version.ToString(3) == Updater.SkippedVersion) return;
+                if (Updater.InstallAutomatically && _busy == 0 && !_setup.Running) InstallUpdate(release);
+                else Notify($"Lavagon {release.Version.ToString(3)} is available.\nClick here to update.");
+            })));
+        }
+
+        public void OfferUpdate(Updater.Release release)
+        {
+            if (release == null || _updating) return;
+            ShowMain();
+            using (var dlg = new UpdateDialog(release))
+            {
+                dlg.ShowDialog(this);
+                if (dlg.Result == UpdateDialog.Choice.Update) InstallUpdate(release);
+                else if (dlg.Result == UpdateDialog.Choice.Skip)
+                {
+                    Updater.SkippedVersion = release.Version.ToString(3);
+                    _updateLink.Visible = false;
+                }
+            }
+        }
+
+        /// <summary>Downloads the new setup, starts it and closes Lavagon (services keep running); the setup reopens Lavagon.</summary>
+        public void InstallUpdate(Updater.Release release)
+        {
+            if (_updating) return;
+            if (_setup.Running) throw new LavagonException("Please wait until the setup of Apache, PHP and MySQL is finished.");
+            _updating = true;
+            string setup = null;
+            RunAsync($"Updating to {release.Version.ToString(3)}...", () => setup = Updater.DownloadAsync(release).GetAwaiter().GetResult(), () =>
+            {
+                if (setup == null) { _updating = false; return; }
+                try
+                {
+                    Updater.StartInstaller(setup);
+                }
+                catch (Exception ex)
+                {
+                    _updating = false;
+                    Ui.ShowError(ex);
+                    return;
+                }
+                // Leave the services running: the new Lavagon finds them again through tmp\pids.
+                _exiting = true;
+                _setup.Cancel();
+                Application.Exit();
+            });
         }
 
         /// <summary>Downloads Apache, PHP, MySQL, Mailpit and the VC++ runtime when they are missing.</summary>

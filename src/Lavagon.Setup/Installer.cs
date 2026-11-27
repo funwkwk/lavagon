@@ -218,7 +218,7 @@ namespace Lavagon.Setup
             t.InvokeMember("Save", BindingFlags.InvokeMethod, null, sc, null);
         }
 
-        private static bool ShortcutPointsInto(string lnk, string dir)
+        public static bool ShortcutPointsInto(string lnk, string dir)
         {
             try
             {

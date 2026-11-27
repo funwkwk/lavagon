@@ -5,6 +5,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-11-27
+
+### Added
+
+- In-app updates: Lavagon checks the GitHub releases (shortly after start, then every 12 hours) and shows *Update to X.Y.Z* in the window, the tray and the menu. *Update now* downloads the new setup, verifies its SHA-256 checksum, closes Lavagon and reopens the new version; running services keep running and `bin`, `data`, `etc`, `usr`, `www` are never touched. *Menu > Check for updates*, *Skip this version*, and *Preferences > Updates* (check automatically, install automatically).
+- `Lavagon-Setup.exe --update <pid> --dir <folder>`: waits for that Lavagon to exit, updates in place (a portable copy stays portable, existing shortcuts are kept) and restarts Lavagon.
+
+### Changed
+
+- The rhino icon fills more of its square, so it looks bigger in the taskbar and tray.
+
 ## [1.1.0] - 2026-11-27
 
 ### Added
@@ -43,7 +54,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Preferences: run at startup, run minimized, start all automatically, document root, data directory, hostname format, ports.
 - GitHub Actions build and release workflows.
 
-[Unreleased]: https://github.com/funwkwk/lavagon/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/funwkwk/lavagon/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/funwkwk/lavagon/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/funwkwk/lavagon/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/funwkwk/lavagon/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/funwkwk/lavagon/releases/tag/v1.0.0
