@@ -39,7 +39,7 @@ namespace Lavagon.UI
         private readonly GlyphButton _hosts;
         private readonly TextLink _help;
         private readonly GlyphButton _gear;
-        private readonly WelcomePanel _welcome;
+        private readonly SetupPanel _setup;
         private string _componentSignature;
         private readonly List<Row> _rows = new List<Row>();
         private readonly FlatButton _startAll, _web, _database, _terminal, _root;
@@ -95,7 +95,8 @@ namespace Lavagon.UI
             _gear.Click += (o, e) => ShowPreferences();
             _tips.SetToolTip(_gear, "Preferences");
 
-            _welcome = new WelcomePanel(s) { Visible = false };
+            _setup = new SetupPanel(s) { Visible = false };
+            _setup.Finished += OnSetupFinished;
 
             _startAll = Button("Start All", Glyph.Start, (o, e) => ToggleAll());
             _web = Button("Web", Glyph.Globe, (o, e) => Safe(OpenWeb));
@@ -107,7 +108,7 @@ namespace Lavagon.UI
             _tips.SetToolTip(_terminal, "Open Terminal");
             _tips.SetToolTip(_root, "Document Root");
 
-            Controls.AddRange(new Control[] { _logo, _menuLink, _profile, _hosts, _help, _gear, _welcome, _startAll, _web, _database, _terminal, _root });
+            Controls.AddRange(new Control[] { _logo, _menuLink, _profile, _hosts, _help, _gear, _setup, _startAll, _web, _database, _terminal, _root });
 
             _menu = new ContextMenu();
             _menu.Popup += (o, e) => AppMenu.Build(_menu.MenuItems, this);
@@ -168,7 +169,9 @@ namespace Lavagon.UI
         {
             base.OnHandleCreated(e);
             RefreshState();
-            if (App.Settings.StartAllAutomatically)
+            if (Components.NeedsSetup)
+                BeginInvoke((Action)StartSetup); // StartAll follows when the setup is done
+            else if (App.Settings.StartAllAutomatically)
                 BeginInvoke((Action)(() => StartAll()));
         }
 
@@ -196,6 +199,7 @@ namespace Lavagon.UI
         {
             if (_exiting) return;
             _exiting = true;
+            _setup.Cancel();
             RunAsync("Stopping...", () =>
             {
                 foreach (var svc in App.Services.Where(x => x.Installed && x.IsRunning).Reverse())
@@ -255,8 +259,8 @@ namespace Lavagon.UI
                 Controls.Add(row.Action);
                 _rows.Add(row);
             }
-            _welcome.Visible = _rows.Count == 0;
-            if (_welcome.Visible) _welcome.UpdateStatus();
+            _setup.Visible = _rows.Count == 0 || _setup.Running;
+            if (_rows.Count == 0 && !_setup.Running) _setup.ShowNoServices();
             _componentSignature = ComponentSignature();
             ResumeLayout();
             RefreshState();
@@ -294,7 +298,7 @@ namespace Lavagon.UI
                 r.Port.Location = new Point(portX, y);
                 r.Action.Location = new Point(actionX, y);
             }
-            _welcome.Bounds = new Rectangle(S(84), S(64), Math.Max(10, W - S(100)), Math.Max(10, H - S(64) - S(64)));
+            _setup.Bounds = new Rectangle(S(84), S(64), Math.Max(10, W - S(100)), Math.Max(10, H - S(64) - S(64)));
 
             int margin = S(56), gap = S(8), bh = S(24);
             var buttons = new[] { _startAll, _web, _database, _terminal, _root };
@@ -314,13 +318,30 @@ namespace Lavagon.UI
         /// <summary>New component extracted into bin\ (or removed)? Update the window without a restart.</summary>
         private void DetectComponentChanges()
         {
-            if (_busy > 0) return;
+            if (_busy > 0 || _setup.Running) return;
             var sig = ComponentSignature();
             if (sig == _componentSignature) return;
             _componentSignature = sig;
             RebuildRows();
-            if (_rows.Count > 0 && !_welcome.Visible)
+            if (_rows.Count > 0 && !_setup.Visible)
                 Notify("New components detected: " + string.Join(", ", _rows.Select(r => r.Service.Title + " " + r.Service.Version)));
+        }
+
+        /// <summary>Downloads Apache, PHP, MySQL, Mailpit and the VC++ runtime when they are missing.</summary>
+        public void StartSetup()
+        {
+            ShowMain();
+            _setup.Visible = true;
+            _setup.Start();
+            RefreshState();
+        }
+
+        private void OnSetupFinished(bool ok)
+        {
+            RebuildRows();
+            if (!ok || _rows.Count == 0) return;
+            Notify("Lavagon is ready: " + string.Join(", ", _rows.Select(r => r.Service.Title + " " + r.Service.Version)) + ".\nClick Start All to begin.");
+            if (App.Settings.StartAllAutomatically) StartAll();
         }
 
         public void RefreshState()

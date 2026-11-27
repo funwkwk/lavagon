@@ -69,8 +69,8 @@ Apache / Nginx · PHP 5.6 – 8.6 · MySQL / MariaDB · PostgreSQL · Redis · M
    - **`Lavagon-Setup-vX.Y.Z.exe`** — installer: pick a folder (default `C:\lavagon`), adds Start menu / desktop shortcuts and an entry in *Settings > Apps*. No admin rights needed; uninstalling keeps your projects and databases.
    - or **`Lavagon-vX.Y.Z-portable.zip`** — extract it anywhere, e.g. `C:\lavagon`.
    - or [build it yourself](#building-from-source).
-2. Extract at least **Apache**, **PHP (Thread Safe x64)** and **MySQL** into `bin\` — see [Getting the components](#getting-the-components).
-3. Run `Lavagon.exe` and click **Start All**.
+2. Run `Lavagon.exe`. On the first start it downloads **Apache**, **PHP (Thread Safe x64)**, **MySQL** and **Mailpit** from their official websites into `bin\` and installs the Visual C++ runtime if needed (one Windows prompt) — see [Getting the components](#getting-the-components).
+3. Click **Start All**.
 4. Create `C:\lavagon\www\myapp\index.php` and open **http://myapp.test** (Lavagon asks once for admin rights to update the hosts file).
 
 > [!TIP]
@@ -78,7 +78,19 @@ Apache / Nginx · PHP 5.6 – 8.6 · MySQL / MariaDB · PostgreSQL · Redis · M
 
 ## Getting the components
 
-Each tool lives in `bin\<tool>\<version>\`. Extract the official Windows zip into a new sub folder and it appears in the menu — keep as many versions as you like.
+**Automatic.** On the first start Lavagon sets everything up by itself, showing the progress in the main window:
+
+| Component | Source | Version picked |
+| --- | --- | --- |
+| Apache 2.4 (Win64) | [Apache Lounge](https://www.apachelounge.com/download/) | the current build |
+| PHP (Thread Safe, x64) | [windows.php.net](https://windows.php.net/download/) `releases.json` | newest branch with at least two bug-fix releases (SHA-256 verified) |
+| MySQL (ZIP archive) | [cdn.mysql.com](https://dev.mysql.com/downloads/mysql/) | newest 8.4 LTS |
+| Mailpit | [axllent/mailpit](https://github.com/axllent/mailpit/releases/latest) | latest release |
+| Visual C++ 2015-2026 runtime (x64) | [Microsoft](https://aka.ms/vc14/vc_redist.x64.exe) | installed or updated only when older than the current one (one UAC prompt) |
+
+The setup runs again automatically whenever `bin\` has no usable service (and from the welcome screen's *Download missing components* link). If a download fails, click *Retry*; details are in `logs\lavagon.log`.
+
+**More versions / other tools.** Each tool lives in `bin\<tool>\<version>\`. Extract the official Windows zip into a new sub folder and it appears in the menu — keep as many versions as you like.
 
 | Component | Folder example | Download |
 | --- | --- | --- |
@@ -93,7 +105,7 @@ Each tool lives in `bin\<tool>\<version>\`. Extract the official Windows zip int
 | Node.js / Python | `bin\nodejs\node-v22`, `bin\python\python-3.13` | [nodejs.org](https://nodejs.org/), [python.org](https://www.python.org/downloads/windows/) |
 | Composer, HeidiSQL, Git, Cmder, Notepad++ | `bin\composer\composer.phar`, `bin\heidisql\`, … | optional |
 
-PHP, Apache and MySQL need the [Microsoft Visual C++ Redistributable (x64)](https://aka.ms/vs/17/release/vc_redist.x64.exe); PHP 5.6 also needs the [2012 version](https://www.microsoft.com/download/details.aspx?id=30679). Lavagon tells you if one is missing.
+PHP, Apache and MySQL need the [Microsoft Visual C++ Redistributable (x64)](https://aka.ms/vc14/vc_redist.x64.exe) (the automatic setup installs it); PHP 5.6 also needs the [2012 version](https://www.microsoft.com/download/details.aspx?id=30679). Lavagon tells you if one is missing.
 
 ## PHP compatibility
 
@@ -218,8 +230,8 @@ Lavagon is an independent project inspired by the workflow of tools like Laragon
 **Lavagon** adalah lingkungan pengembangan lokal untuk Windows yang portabel dan open source — mirip Laragon, tanpa installer.
 
 1. Unduh dari [Releases](https://github.com/funwkwk/lavagon/releases/latest): jalankan **`Lavagon-Setup-vX.Y.Z.exe`** (installer, default `C:\lavagon`, tanpa admin), atau ekstrak zip portabel ke folder kosong.
-2. Ekstrak Apache, PHP (Thread Safe x64) dan MySQL ke `bin\<tool>\<versi>` (link download ada di tabel [Getting the components](#getting-the-components)).
-3. Jalankan `Lavagon.exe`, klik **Start All**.
+2. Jalankan `Lavagon.exe`. Saat pertama kali dibuka, Lavagon otomatis mengunduh Apache, PHP (Thread Safe x64), MySQL dan Mailpit dari situs resminya ke `bin\`, serta memasang Visual C++ runtime bila perlu (satu kali konfirmasi Windows). Tidak perlu download manual.
+3. Klik **Start All**.
 4. Setiap folder di `www` otomatis menjadi `http://namafolder.test`.
 
 Mendukung PHP 5.6 sampai 8.6 secara berdampingan; ganti versi lewat *Menu > PHP > Version*. Build dari source dengan `build.ps1`, hasilnya ada di `dist\Lavagon`. Kontribusi sangat diterima — lihat [CONTRIBUTING.md](CONTRIBUTING.md).

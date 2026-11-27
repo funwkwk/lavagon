@@ -5,6 +5,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+
+- Automatic setup: on the first start (and whenever `bin\` has no usable service) Lavagon downloads Apache 2.4, PHP (Thread Safe x64), MySQL 8.4 LTS and Mailpit from their official websites into `bin\`, and installs or updates the Visual C++ runtime when needed. Progress is shown per component in the main window, with *Retry* on failure. No manual downloads any more.
+
+### Changed
+
+- The welcome panel with download links is replaced by the setup progress panel.
+
 ## [1.0.1] - 2026-11-26
 
 ### Added
