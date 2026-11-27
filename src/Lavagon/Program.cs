@@ -10,7 +10,7 @@ namespace Lavagon
     internal static class Program
     {
         public const string Name = "Lavagon";
-        public const string Version = "1.1.1";
+        public const string Version = "1.1.2";
         public const string HomePage = "https://github.com/funwkwk/lavagon";
 
         [STAThread]
