@@ -69,8 +69,12 @@ Invoke-Checked 'git tag' { git tag -a $tag -m "Lavagon $tag" }
 # Use the GitHub CLI login for this push only (ignores other stored Git credentials).
 Invoke-Checked 'git push' { git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push origin $branch $tag }
 $notes = if ($NotesFile) { @('--notes-file', $NotesFile) } else { @('--generate-notes') }
-gh release view $tag *> $null
-if ($LASTEXITCODE -eq 0) {
+# "release not found" on stderr is expected for a new release: don't let it stop the script.
+$ErrorActionPreference = 'Continue'
+gh release view $tag 2>&1 | Out-Null
+$exists = ($LASTEXITCODE -eq 0)
+$ErrorActionPreference = 'Stop'
+if ($exists) {
     Invoke-Checked 'gh release upload' { gh release upload $tag @assets --clobber }
 } else {
     Invoke-Checked 'gh release create' { gh release create $tag @assets --title "Lavagon $tag" --latest @notes }

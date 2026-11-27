@@ -1,6 +1,9 @@
 Lavagon - bin folder
 ====================
 
+Lavagon downloads Apache, PHP, MySQL and Mailpit into this folder by itself
+on the first start. To add more versions or other tools:
+
 Each tool lives in its own folder, one sub folder per version. Extract the
 official Windows zip into a new sub folder and it shows up in Lavagon's Menu:
 
