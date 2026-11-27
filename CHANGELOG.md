@@ -5,6 +5,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-27
+
 ### Added
 
 - Automatic setup: on the first start (and whenever `bin\` has no usable service) Lavagon downloads Apache 2.4, PHP (Thread Safe x64), MySQL 8.4 LTS and Mailpit from their official websites into `bin\`, and installs or updates the Visual C++ runtime when needed. Progress is shown per component in the main window, with *Retry* on failure. No manual downloads any more.
@@ -41,6 +43,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Preferences: run at startup, run minimized, start all automatically, document root, data directory, hostname format, ports.
 - GitHub Actions build and release workflows.
 
-[Unreleased]: https://github.com/funwkwk/lavagon/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/funwkwk/lavagon/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/funwkwk/lavagon/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/funwkwk/lavagon/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/funwkwk/lavagon/releases/tag/v1.0.0
