@@ -12,6 +12,7 @@ namespace Lavagon.Setup
     ///   (no arguments)                       setup wizard
     ///   --silent [--dir D] [--no-desktop] [--no-startmenu] [--no-register] [--launch]
     ///   --uninstall [--silent] [--dir D]      remove Lavagon (user data is kept)
+    ///   --update PID [--dir D]                used by Lavagon's updater: wait for PID to exit, install, restart Lavagon
     /// Exit codes: 0 ok, 1 error, 2 cancelled.
     /// </summary>
     internal static class Program
@@ -33,6 +34,7 @@ namespace Lavagon.Setup
             try
             {
                 if (Has("--uninstall")) return Uninstall(Value("--dir"), silent, Has("--from-temp"));
+                if (Has("--update")) return Update(Value("--update"), Value("--dir"));
 
                 if (silent)
                 {
@@ -57,6 +59,47 @@ namespace Lavagon.Setup
                 else Console.Error.WriteLine(ex.Message);
                 return 1;
             }
+        }
+
+        /// <summary>
+        /// Started by Lavagon's updater: wait until that Lavagon (process id) has exited, install over
+        /// its folder without asking, keep the user's shortcut choices, then start Lavagon again
+        /// (also after an error, so the user is never left without Lavagon).
+        /// </summary>
+        private static int Update(string pidText, string dir)
+        {
+            dir = Path.GetFullPath(dir ?? Installer.InstalledLocation ?? Installer.DefaultDirectory);
+            if (int.TryParse(pidText, out int pid))
+            {
+                try
+                {
+                    using (var p = Process.GetProcessById(pid)) p.WaitForExit(60000);
+                }
+                catch (ArgumentException) { /* already gone */ }
+            }
+
+            int code = 0;
+            try
+            {
+                var registered = string.Equals((Installer.InstalledLocation ?? "").TrimEnd('\\'), dir.TrimEnd('\\'), StringComparison.OrdinalIgnoreCase);
+                Installer.Install(new InstallOptions
+                {
+                    Directory = dir,
+                    StartMenuShortcut = File.Exists(Installer.StartMenuShortcut) && Installer.ShortcutPointsInto(Installer.StartMenuShortcut, dir),
+                    DesktopShortcut = File.Exists(Installer.DesktopShortcut) && Installer.ShortcutPointsInto(Installer.DesktopShortcut, dir),
+                    Register = registered, // a portable copy stays portable
+                }, null);
+            }
+            catch (Exception ex)
+            {
+                code = 1;
+                MessageBox.Show("Lavagon could not be updated:\n\n" + ex.Message + "\n\nYour current version is started again.",
+                    "Lavagon Update", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+
+            var exe = Path.Combine(dir, "Lavagon.exe");
+            if (File.Exists(exe)) Process.Start(new ProcessStartInfo(exe) { UseShellExecute = true, WorkingDirectory = dir })?.Dispose();
+            return code;
         }
 
         private static int Uninstall(string dir, bool silent, bool fromTemp)

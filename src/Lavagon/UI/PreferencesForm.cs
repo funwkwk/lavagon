@@ -11,7 +11,7 @@ namespace Lavagon.UI
     public class PreferencesForm : Form
     {
         private readonly float _s;
-        private readonly CheckBox _runAtStartup, _runMinimized, _startAll, _autoVhosts, _apacheSsl;
+        private readonly CheckBox _runAtStartup, _runMinimized, _startAll, _autoVhosts, _apacheSsl, _checkUpdates, _autoUpdate;
         private readonly TextBox _hostname;
         private readonly TextLink _docRoot, _dataDir;
         private readonly Dictionary<ServiceBase, CheckBox> _use = new Dictionary<ServiceBase, CheckBox>();
@@ -38,9 +38,23 @@ namespace Lavagon.UI
             var tabs = new TabControl { Location = new Point(S(10), S(10)), Size = new Size(S(500), S(370)) };
             var general = new TabPage("General") { BackColor = Theme.Background };
             var services = new TabPage("Services && Ports") { BackColor = Theme.Background };
+            var updates = new TabPage("Updates") { BackColor = Theme.Background };
             tabs.TabPages.Add(general);
             tabs.TabPages.Add(services);
+            tabs.TabPages.Add(updates);
             Controls.Add(tabs);
+
+            // ---- Updates ----
+            int uy = S(14);
+            AddLabel(updates, $"Installed version: Lavagon {Program.Version}", S(16), uy);
+            uy += S(30);
+            _checkUpdates = Check(updates, "Check for new Lavagon versions automatically (on GitHub)", Updater.CheckAutomatically, ref uy);
+            _autoUpdate = Check(updates, "Install new versions automatically, without asking", Updater.InstallAutomatically, ref uy);
+            _autoUpdate.Location = new Point(S(34), _autoUpdate.Top);
+            _autoUpdate.Enabled = _checkUpdates.Checked;
+            _checkUpdates.CheckedChanged += (o, e) => _autoUpdate.Enabled = _checkUpdates.Checked;
+            AddLabel(updates, "Updating replaces Lavagon.exe only and restarts Lavagon. Your services keep\nrunning; bin, data, etc, usr and www are never touched. Check now: Menu > Check for updates.", S(16), uy + S(6))
+                .ForeColor = Theme.MutedText;
 
             // ---- General ----
             var st = App.Settings;
@@ -180,6 +194,8 @@ namespace Lavagon.UI
             }
             st.RunMinimized = _runMinimized.Checked;
             st.StartAllAutomatically = _startAll.Checked;
+            Updater.CheckAutomatically = _checkUpdates.Checked;
+            Updater.InstallAutomatically = _checkUpdates.Checked && _autoUpdate.Checked;
 
             if (_autoVhosts.Checked != st.AutoVirtualHosts || _hostname.Text != st.HostnameFormat) WebConfigChanged = true;
             st.AutoVirtualHosts = _autoVhosts.Checked;

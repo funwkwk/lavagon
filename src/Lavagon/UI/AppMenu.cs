@@ -35,6 +35,10 @@ namespace Lavagon.UI
             items.Add(QuickAppMenu());
             items.Add("-");
             items.Add(Item("Preferences...", () => _form.ShowPreferences()));
+            var update = _form.AvailableUpdate;
+            items.Add(update != null
+                ? Item($"Update to Lavagon {update.Version.ToString(3)}...", () => _form.OfferUpdate(update))
+                : Item("Check for updates...", () => _form.CheckForUpdates(true)));
             items.Add(Item("Exit", () => _form.ExitApp()));
         }
 
