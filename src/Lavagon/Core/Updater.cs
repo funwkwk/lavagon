@@ -120,6 +120,7 @@ namespace Lavagon.Core
                 if (line.StartsWith("#") || line.Length == 0) continue;
                 line = Regex.Replace(line, @"\[([^\]]+)\]\([^)]+\)", "$1");
                 line = line.Replace("**", "").Replace("`", "");
+                line = Regex.Replace(line, @"(?<![\w*])\*([^*\s][^*]*)\*(?![\w*])", "$1"); // *italic*
                 line = Regex.Replace(line, @"^[-*] ", "• ");
                 lines.Add(line);
             }

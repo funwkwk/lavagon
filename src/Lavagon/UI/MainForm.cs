@@ -85,7 +85,13 @@ namespace Lavagon.UI
             _menuLink.MouseUp += (o, e) => _menu.Show(_menuLink, new Point(0, _menuLink.Height));
 
             _profile = new Label { AutoSize = true, Font = Theme.UiFont(8.25f), Text = "[" + App.Settings.Profile + "]" };
-            _tips.SetToolTip(_profile, "Current profile");
+            _profile.Cursor = Cursors.Hand;
+            _profile.Click += (o, e) => Safe(() =>
+            {
+                using (var dlg = new InfoDialog(Program.Name + " - installed versions", InfoDialog.InstalledVersions()))
+                    dlg.ShowDialog(this);
+            });
+            _tips.SetToolTip(_profile, "Current profile - click to see the installed versions");
 
             _updateLink = new TextLink { Font = Theme.UiFont(8.25f, FontStyle.Bold), ForeColor = Theme.Accent, Visible = false };
             _updateLink.Click += (o, e) => OfferUpdate(_update);
