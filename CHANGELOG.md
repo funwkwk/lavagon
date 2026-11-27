@@ -5,6 +5,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+
+- Click the profile name (e.g. `[default]`) at the top of the main window to see the version folder in use for every installed tool (Apache, MySQL, PHP, Mailpit, Node.js, ...), like `lavagon.ini`. The text can be copied.
+
+### Fixed
+
+- Update dialog: `*italic*` markers from the release notes are no longer shown.
+
 ## [1.1.1] - 2026-11-27
 
 ### Added
